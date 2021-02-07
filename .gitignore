@@ -1,0 +1,20 @@
+# Mac 
+.DS_Store/
+.DS_Store
+
+# jupyter and IPython
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+profile_default/
+ipython_config.py
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
