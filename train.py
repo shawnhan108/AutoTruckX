@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn 
 from torch.optim import Adam, lr_scheduler
-from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_name
+from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_src
 from utils import group_move_to_device, LossMeter, get_logger
 from tensorboardX import SummaryWriter
 
-from TruckNN import TruckNN, TruckInception, TruckRNN
+from models import TruckNN, TruckInception, TruckRNN
 
 """
 Input Dimension Validation: 
@@ -19,7 +19,7 @@ def train():
 
     # For tensorboard tracking
     logger = get_logger()
-    logger.info("(1) Initiating training ... ")
+    logger.info("(1) Initiating Training ... ")
     writer = SummaryWriter()
 
     # Init model
@@ -132,7 +132,10 @@ def train():
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optim.state_dict(),
             }
-            torch.save(state, ckpt_name)
+            torch.save(state, ckpt_src)
             logger.info("Checkpoint updated.")
 
     writer.close()
+
+if __name__ == "__main__":
+    train()
