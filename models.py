@@ -155,7 +155,7 @@ class TruckRNN (nn.Module):
         return x.squeeze().permute(1, 0)                                                    # 5 x N x 1 -> N x 5
 
 
-class TruckInception (nn.Module):
+class TruckInception(nn.Module):
     """
     A modified CNN model, leverages the pretrained Inception Net for features extraction https://arxiv.org/abs/1512.00567
 

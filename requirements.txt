@@ -5,3 +5,5 @@ torch==1.7.1
 torchaudio==0.7.0a0+a853dff
 torchvision==0.8.2
 tensorboardX==2.1
+scikit-learn==0.23.2
+pandas==1.2.1

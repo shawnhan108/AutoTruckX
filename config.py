@@ -2,10 +2,8 @@ import torch
 from datetime import datetime
 
 # data
-train_img_dir = "./data/train"
-valid_img_dir = "./data/valid"
-train_ang = "./data/train_record.csv"
-valid_ang = "./data/valid_record.csv"
+img_dir = "./data/imgs"
+csv_src = "./data/record.csv"
 
 # target network
 net = "TruckNN" # "TruckRNN", "TruckInception"

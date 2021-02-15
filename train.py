@@ -1,11 +1,17 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
 import torch
-import torch.nn as nn 
+import torch.nn as nn
+from torch.utils.data import DataLoader
 from torch.optim import Adam, lr_scheduler
-from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_src
-from utils import group_move_to_device, LossMeter, get_logger
 from tensorboardX import SummaryWriter
 
+from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_src, net, \
+                    img_dir, csv_src
+from utils import group_move_to_device, LossMeter, get_logger
 from models import TruckNN, TruckInception, TruckRNN
+from data import TruckDataset
 
 """
 Input Dimension Validation: 
@@ -15,7 +21,10 @@ TruckRNN: N x 3 x 15 x 80 x 240 -> N x 5
 TruckInception: N x 3 x 299 x 299 -> N x 1
 """
 
-def train():  
+def train():
+    def loadData():
+        # TODO: 
+        pass
 
     # For tensorboard tracking
     logger = get_logger()
@@ -32,10 +41,13 @@ def train():
     optim = Adam(model.parameters(), lr=lrate, weight_decay=wdecay)
     scheduler = lr_scheduler.MultiStepLR(optim, milestones=[17], gamma=0.1)
 
-    # TODO: Dataset and DataLoaders
-    # (1) must cast from np to tensor: torch.from_numpy(x).permute(2, 0, 1) # D, H, W
-    # (2) transformations: resize, totensor, normalize, augmentation?
-    # (3) must return leftImg, centerImg, rightImg, leftAng, centerAng, rightAng, all of shape N x Img
+    # Dataset and DataLoaders
+    img_src_lst, angles = loadData()
+    X_train, X_valid, y_train, y_valid = train_test_split(img_src_lst, angles, test_size=0.25, random_state=0, shuffle=True)
+    train_dataset = TruckDataset(X=X_train, y=y_train, model_name=net)
+    valid_dataset = TruckDataset(X=X_valid, y=y_valid, model_name=net)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     
     logger.info("(3) Dataset Initiated. Training Started. ")
 
