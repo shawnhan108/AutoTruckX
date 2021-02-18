@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from PIL import Image
 
@@ -22,17 +23,18 @@ class TruckDataset(Dataset):
         return len(self.img_names)
     
     def __getitem__(self, index):
-        name = self.img_names[index].split('.')[0]
-        front_img, left_img, right_img = np.array(Image.open(name + '_front.jpg')), np.array(Image.open(name + '_left.jpg')), np.array(Image.open(name + '_right.jpg'))
-        front_angle, left_angle, right_angle = self.angles[index], self.angles[index] + 0.4, self.angles[index] - 0.4
+        name = self.img_names[index][0].split('IMG/center')[1]
+        front_name, left_name, right_name = os.path.join('data', 'IMG/center' + name), os.path.join('data', 'IMG/left' + name), os.path.join('data', 'IMG/right' + name)
+        front_img, left_img, right_img = np.array(Image.open(front_name)), np.array(Image.open(left_name)), np.array(Image.open(right_name))
+        front_angle, left_angle, right_angle = self.angles[index][0], self.angles[index][0] + 0.4, self.angles[index][0] - 0.4
 
-        front_img, front_angle = process(front_img, front_angle, self.model_name)
-        left_img, left_angle = process(left_img, left_angle, self.model_name)
-        right_img, right_angle = process(right_img, right_angle, self.model_name)
+        front_img, front_angle = self.process(front_img, front_angle, self.model_name)
+        left_img, left_angle = self.process(left_img, left_angle, self.model_name)
+        right_img, right_angle = self.process(right_img, right_angle, self.model_name)
 
         return left_img, front_img, right_img, left_angle, front_angle, right_angle
 
-    def process(img, angle, model_name):
+    def process(self, img, angle, model_name):
 
         img = torch.from_numpy(img).permute(2, 0, 1) # D, H, W
 

@@ -19,5 +19,7 @@ coverage.xml
 __pycache__/
 *.py[cod]
 
-# log
+# data and log
 runs/
+data/
+checkpoints/

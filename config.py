@@ -2,7 +2,7 @@ import torch
 from datetime import datetime
 
 # data
-img_dir = "./data/imgs"
+img_dir = "./data/IMG"
 csv_src = "./data/record.csv"
 
 # target network

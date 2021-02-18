@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import tqdm
 
 import torch
 import torch.nn as nn
@@ -23,8 +24,11 @@ TruckInception: N x 3 x 299 x 299 -> N x 1
 
 def train():
     def loadData():
-        # TODO: 
-        pass
+        data = pd.read_csv(csv_src)
+        X = data[['center']].values
+        y = data[['steering']].values
+
+        return X, y
 
     # For tensorboard tracking
     logger = get_logger()
@@ -55,12 +59,13 @@ def train():
     epochs_since_improvement = 0
 
     # loop over epochs
+    epoch_bar = tqdm.tqdm(total=epochs, desc="Epoch", position=0, leave=True)
     for epoch in range(epochs):
 
         # Training.
         model.train()
         trainLossMeter = LossMeter()
-
+        train_batch_bar = tqdm.tqdm(total=len(train_loader), desc="TrainBatch", position=0, leave=True)
         for batch_num, (leftImg, centerImg, rightImg, leftAng, centerAng, rightAng) in enumerate(train_loader):
 
             leftImg, centerImg, rightImg, leftAng, centerAng, rightAng = group_move_to_device([leftImg, centerImg, rightImg, leftAng, centerAng, rightAng])
@@ -69,7 +74,7 @@ def train():
             for (img, y_train) in [[leftImg, leftAng], [centerImg, centerAng], [rightImg, rightAng]]:
 
                 y_pred = model(img)
-                y_pred = y_pred.unsqueeze(1) # of shape N x 1
+                y_train = y_train.unsqueeze(1) # of shape N x 1
                 loss = getLoss(y_pred, y_train)
 
                 # Backward Propagation, Update weight and metrics
@@ -90,13 +95,14 @@ def train():
                 writer.add_scalar('Train_Loss_{0}'.format(tensorboard_freq), 
                                 trainLossMeter.avg, 
                                 epoch * (len(train_loader) / tensorboard_freq) + (i+1) / tensorboard_freq)
+            train_batch_bar.update(1)
 
         writer.add_scalar('Train_Loss_epoch', trainLossMeter.avg, epoch)
 
         # Validation.
         model.eval()
         validLossMeter = LossMeter()
-
+        valid_batch_bar = tqdm.tqdm(total=len(valid_loader), desc="ValidBatch", position=0, leave=True)
         with torch.no_grad():
             for batch_num, (leftImg, centerImg, rightImg, leftAng, centerAng, rightAng) in enumerate(valid_loader):
 
@@ -105,7 +111,7 @@ def train():
                 for (img, y_train) in [[leftImg, leftAng], [centerImg, centerAng], [rightImg, rightAng]]:
 
                     y_pred = model(img)
-                    y_pred = y_pred.unsqueeze(1) # of shape N x 1
+                    y_train = y_train.unsqueeze(1) # of shape N x 1
                     loss = getLoss(y_pred, y_train)
 
                     # Update loss
@@ -122,7 +128,7 @@ def train():
                     writer.add_scalar('Valid_Loss_{0}'.format(tensorboard_freq), 
                                     validLossMeter.avg, 
                                     epoch * (len(valid_loader) / tensorboard_freq) + (i+1) / tensorboard_freq)
-
+                valid_batch_bar.update(1)
         valid_loss = validLossMeter.avg
         writer.add_scalar('Valid_Loss_epoch', valid_loss, epoch)
         logger.info("Validation Loss of epoch [{0}/{1}]: {2}\n".format(epoch+1, epochs, valid_loss))    
@@ -147,6 +153,7 @@ def train():
             torch.save(state, ckpt_src)
             logger.info("Checkpoint updated.")
 
+        epoch_bar.update(1)
     writer.close()
 
 if __name__ == "__main__":
