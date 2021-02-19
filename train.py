@@ -25,14 +25,15 @@ TruckInception: N x 3 x 299 x 299 -> N x 1
 def train():
     def loadData():
         data = pd.read_csv(csv_src)
-        X = data[['center']].values
-        y = data[['steering']].values
+        X = data[data.columns[0]].values
+        y = data[data.columns[3]].values
 
         return X, y
 
     # For tensorboard tracking
     logger = get_logger()
     logger.info("(1) Initiating Training ... ")
+    logger.info("Training on device: {}".format(device))
     writer = SummaryWriter()
 
     # Init model
