@@ -25,11 +25,12 @@ tensorboard_freq = 200
 curtime = str(datetime.now())
 ckpt_src = "./checkpoints/{1}/ckpt_{0}.pth".format(curtime.split(" ")[0] + "_" + 
             curtime.split(" ")[1][0:2] + "_" + curtime.split(" ")[1][3:5], net)
+ckpt_src = "./checkpoints/{0}/best_ckpt.pth".format(net)
 
 # inference
 best_ckpt_src = "./checkpoints/{0}/best_ckpt.pth".format(net)
 inf_img_src = "./data/inference/input/test.jpeg"
-inf_vid_src = "./data/inference/input/test.mp4"
+inf_vid_src = "./data/inference/input/test2.mp4"
 inf_out_src = "./data/inference/output/output.txt"
 inf_out_img_src = "./data/inference/output/output.jpg"
 inf_out_vid_src = "./data/inference/output/output.avi"

@@ -95,7 +95,7 @@ def train():
             if (batch_num+1) % tensorboard_freq == 0:
                 writer.add_scalar('Train_Loss_{0}'.format(tensorboard_freq), 
                                 trainLossMeter.avg, 
-                                epoch * (len(train_loader) / tensorboard_freq) + (i+1) / tensorboard_freq)
+                                epoch * (len(train_loader) / tensorboard_freq) + (batch_num+1) / tensorboard_freq)
             train_batch_bar.update(1)
 
         writer.add_scalar('Train_Loss_epoch', trainLossMeter.avg, epoch)
@@ -128,7 +128,7 @@ def train():
                 if (batch_num+1) % tensorboard_freq == 0:
                     writer.add_scalar('Valid_Loss_{0}'.format(tensorboard_freq), 
                                     validLossMeter.avg, 
-                                    epoch * (len(valid_loader) / tensorboard_freq) + (i+1) / tensorboard_freq)
+                                    epoch * (len(valid_loader) / tensorboard_freq) + (batch_num+1) / tensorboard_freq)
                 valid_batch_bar.update(1)
         valid_loss = validLossMeter.avg
         writer.add_scalar('Valid_Loss_epoch', valid_loss, epoch)

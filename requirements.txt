@@ -4,7 +4,7 @@ Pillow==8.1.0
 torch==1.7.1
 torchaudio==0.7.0a0+a853dff
 torchvision==0.8.2
-tensorboardX==2.1
+tensorboard==2.4.1
 scikit-learn==0.23.2
 pandas==1.2.1
 tqdm==4.57.0

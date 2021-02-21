@@ -22,4 +22,3 @@ __pycache__/
 # data and log
 runs/
 data/
-checkpoints/
