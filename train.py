@@ -11,7 +11,7 @@ from tensorboardX import SummaryWriter
 from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_src, net, \
                     img_dir, csv_src
 from utils import group_move_to_device, LossMeter, get_logger
-from models import TruckNN, TruckInception, TruckRNN
+from models import TruckNN, TruckResnet50, TruckRNN
 from data import TruckDataset
 
 """
@@ -37,10 +37,14 @@ def train():
     writer = SummaryWriter()
 
     # Init model
-    model = TruckNN()
+    if net == "TruckNN":
+        model = TruckNN()
+    elif net == "TruckResnet50":
+        model = TruckResnet50()
     model = nn.DataParallel(model)
     model = model.to(device)
     logger.info("(2) Model Initiated ... ")
+    logger.info("Training model: {}".format(net))
 
     # Schedule learning rate. Fine-tune after 25th epoch for 5 more epochs.
     optim = Adam(model.parameters(), lr=lrate, weight_decay=wdecay)
@@ -49,8 +53,8 @@ def train():
     # Dataset and DataLoaders
     img_src_lst, angles = loadData()
     X_train, X_valid, y_train, y_valid = train_test_split(img_src_lst, angles, test_size=0.25, random_state=0, shuffle=True)
-    train_dataset = TruckDataset(X=X_train, y=y_train, model_name=net)
-    valid_dataset = TruckDataset(X=X_valid, y=y_valid, model_name=net)
+    train_dataset = TruckDataset(X=X_train, y=y_train)
+    valid_dataset = TruckDataset(X=X_valid, y=y_valid)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     

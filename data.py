@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-from config import img_dir, csv_src
+from config import img_dir, csv_src, net
 
 class TruckDataset(Dataset):
     """
@@ -14,10 +14,10 @@ class TruckDataset(Dataset):
     # (2) transformations: resize, totensor, normalize, augmentation?
     # (3) must return leftImg, centerImg, rightImg, leftAng, centerAng, rightAng, all of shape N x Img
     """
-    def __init__(self, X, y, model_name):
+    def __init__(self, X, y):
         self.img_names = X
         self.angles = y
-        self.model_name = model_name
+        self.model_name = net
 
     def __len__(self):
         return len(self.img_names)
@@ -40,8 +40,8 @@ class TruckDataset(Dataset):
 
         if model_name == "TruckNN":
             size = (80, 240)
-        elif model_name == "TruckInception":
-            size = (299, 299)
+        elif model_name == "TruckResnet50":
+            size = (224, 224)
 
         transform = transforms.Compose([
             transforms.Resize(size),

@@ -6,7 +6,9 @@ img_dir = "./data/IMG"
 csv_src = "./data/record.csv"
 
 # target network
-net = "TruckNN" # "TruckRNN", "TruckInception"
+# net = "TruckNN" 
+# net = "TruckRNN"
+net = "TruckResnet50"
 
 # training
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
