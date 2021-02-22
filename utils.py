@@ -35,3 +35,10 @@ def get_logger():
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
     return logger
+
+def freeze_params(model):
+    count = 0
+    for param in model.parameters():
+        count += 1
+        if count <= 141:
+            param.requires_grad = False

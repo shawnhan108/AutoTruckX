@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn 
-from torchvision.models import inception_v3
+from torchvision.models import resnet50
+
+from utils import freeze_params
 
 class TruckNN (nn.Module):
     """
@@ -155,26 +157,27 @@ class TruckRNN (nn.Module):
         return x.squeeze().permute(1, 0)                                                    # 5 x N x 1 -> N x 5
 
 
-class TruckInception(nn.Module):
+class TruckResnet50(nn.Module):
     """
-    A modified CNN model, leverages the pretrained Inception Net for features extraction https://arxiv.org/abs/1512.00567
+    A modified CNN model, leverages the pretrained resnet50 for features extraction https://arxiv.org/abs/1512.00567
 
-    Transfer Learning from pretrained Inception Net, connected with 3 dense layers. 
-    Total params: 27.5M (27489353), pretrained 27.2M (27161264), trainable 0.3M (320809)
+    Transfer Learning from pretrained Resnet-50, connected with 3 dense layers. 
+    Total params: 24.7M (24704961), pretrained 14.5M (14582848), trainable 10.1M (10122113)
 
-    TODO: Input shape validation --> now is set as H = 299, W = 299
+    TODO: Input shape validation --> now is set as H = 224, W = 224
     """
 
     def __init__(self):
-        super(TruckInception, self).__init__()
+        super(TruckResnet50, self).__init__()
 
-        self.inception = inception_v3(pretrained=True)
-        self.inception.fc = nn.Identity()                           # N x 3 x 299 x 299 -> N x 2048
+        self.resnet50 = resnet50(pretrained=True)
+        freeze_params(self.resnet50)
+        self.resnet50.fc = nn.Identity()                            # N x 3 x 224 x 224 -> N x 2048
 
         self.fc = nn.Sequential(
-            nn.Linear(2048, 1024),                                  # N x 2048 -> N x 1024
+            nn.Linear(2048, 512),                                   # N x 2048 -> N x 512
             nn.ELU(),
-            nn.Linear(1024, 256),                                   # N x 1024 -> N x 256
+            nn.Linear(512, 256),                                    # N x 512 -> N x 256
             nn.ELU(),
             nn.Linear(256, 64),                                     # N x 256 -> N x 64
             nn.ELU()
@@ -184,24 +187,24 @@ class TruckInception(nn.Module):
 
     def forward(self, x):
         
-        x = x.view(x.size(0), 3, 299, 299)                          # N x 3 x H x W, H = 299, W = 299
+        x = x.view(x.size(0), 3, 224, 224)                          # N x 3 x H x W, H = 224, W = 224
 
-        x = self.inception(x)                                       # N x 2048
+        x = self.resnet50(x)                                        # N x 2048
 
         # input dimension needs to be monitored
-        x = self.fc(x.logits)                                       # N x 64
+        x = self.fc(x)                                              # N x 64
 
         x = self.out(x)                                             # N x 1
 
         return x
 
 
-"""
-y = TruckInception()
-print(y)
-print(sum(p.numel() for p in y.parameters() if p.requires_grad))
-x = torch.randn(2, 3, 299, 299)
-print(x.size())
-x = y(x)
-print(x.size())
-"""
+# """
+# y = TruckResnet50()
+# print(y)
+# print(sum(p.numel() for p in y.parameters() if not p.requires_grad))
+# x = torch.randn(2, 3, 224, 224)
+# print(x.size())
+# x = y(x)
+# print(x.size())
+# """
