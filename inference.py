@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 import cv2
 
-from models import TruckNN
+from models import TruckNN, TruckResnet50
 from config import device, best_ckpt_src, inf_img_src, inf_vid_src, inf_out_src, inf_out_img_src, inf_out_vid_src, net
 from utils import get_logger
 from visualize import vis_angle_on_img
@@ -18,8 +18,8 @@ def inference_image(model, logger, img=np.array(Image.open(inf_img_src)), record
 
     if net == "TruckNN":
         size = (80, 240)
-    elif net == "TruckInception":
-        size = (299, 299)
+    elif net == "TruckResnet50":
+        size = (224, 224)
 
     transform = transforms.Compose([
         transforms.Resize(size),
@@ -85,7 +85,10 @@ if __name__ == "__main__":
     # init model
     logger = get_logger()
     logger.info("(1) Initiating Inference ... ")
-    model = TruckNN()
+    if net == "TruckNN":
+        model = TruckNN()
+    elif net == "TruckResnet50":
+        model = TruckResnet50()
     model = model.to(device)
 
     # load model weights
