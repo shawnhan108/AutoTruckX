@@ -114,9 +114,10 @@ class TruckNNSampler(Sampler):
         self.data_len = len(self.data_source)
     
     def __len__(self):
-        if self.data_len // self.batch_size == 0:
-            return self.data_len // self.batch_size
-        return 1 + self.data_len // self.batch_size
+        idx_len = len(list(range(1, self.data_len, self.seq_len)))
+        if idx_len // self.batch_size == 0:
+            return idx_len // self.batch_size
+        return 1 + idx_len // self.batch_size
 
     def __iter__(self):
         # get indices
