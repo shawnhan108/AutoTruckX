@@ -9,17 +9,17 @@ from torch.optim import Adam, lr_scheduler
 from tensorboardX import SummaryWriter
 
 from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_src, net, \
-                    img_dir, csv_src
+                    img_dir, csv_src, train_test_split_ratio, seq_len
 from utils import group_move_to_device, LossMeter, get_logger
 from models import TruckNN, TruckResnet50, TruckRNN
-from data import TruckDataset
+from data import TruckDataset, TruckNNSampler
 
 """
 Input Dimension Validation: 
 
 TruckNN: N x 3 x 80 x 240 -> N x 1
 TruckRNN: N x 3 x 15 x 80 x 240 -> N x 5
-TruckInception: N x 3 x 299 x 299 -> N x 1
+TruckResnet50: N x 3 x 224 x 224 -> N x 1
 """
 
 def train():
@@ -41,6 +41,9 @@ def train():
         model = TruckNN()
     elif net == "TruckResnet50":
         model = TruckResnet50()
+    elif net == "TruckRNN":
+        model = TruckRNN()
+
     model = nn.DataParallel(model)
     model = model.to(device)
     logger.info("(2) Model Initiated ... ")
@@ -48,15 +51,21 @@ def train():
 
     # Schedule learning rate. Fine-tune after 25th epoch for 5 more epochs.
     optim = Adam(model.parameters(), lr=lrate, weight_decay=wdecay)
-    scheduler = lr_scheduler.MultiStepLR(optim, milestones=[17], gamma=0.1)
+    scheduler = lr_scheduler.MultiStepLR(optim, milestones=[int(epochs * 0.8)], gamma=0.1)
 
     # Dataset and DataLoaders
     img_src_lst, angles = loadData()
-    X_train, X_valid, y_train, y_valid = train_test_split(img_src_lst, angles, test_size=0.25, random_state=0, shuffle=True)
+    X_train, X_valid, y_train, y_valid = train_test_split(img_src_lst, angles, test_size=1 - train_test_split_ratio, random_state=0, shuffle=True)
     train_dataset = TruckDataset(X=X_train, y=y_train)
     valid_dataset = TruckDataset(X=X_valid, y=y_valid)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    if net == "TruckRNN":
+        train_sampler = TruckNNSampler(data_source=train_dataset, batch_size=batch_size, seq_len=seq_len)
+        valid_sampler = TruckNNSampler(data_source=valid_dataset, batch_size=batch_size, seq_len=seq_len)
+        train_loader = DataLoader(train_dataset, sampler=train_sampler)
+        valid_loader = DataLoader(valid_dataset, sampler=valid_sampler)
+    else:
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     
     logger.info("(3) Dataset Initiated. Training Started. ")
 
@@ -77,9 +86,13 @@ def train():
 
             optim.zero_grad()
             for (img, y_train) in [[leftImg, leftAng], [centerImg, centerAng], [rightImg, rightAng]]:
-
-                y_pred = model(img)
-                y_train = y_train.unsqueeze(1) # of shape N x 1
+                if net == "TruckRNN":
+                    img = img[0].permute([0, 2, 1, 3, 4])
+                    y_pred = model(img)
+                    y_train = y_train.squeeze()[: , -y_pred.shape[1]:]
+                else:
+                    y_pred = model(img)
+                    y_train = y_train.unsqueeze(1) # of shape N x 1
                 loss = getLoss(y_pred, y_train)
 
                 # Backward Propagation, Update weight and metrics
@@ -114,9 +127,13 @@ def train():
                 leftImg, centerImg, rightImg, leftAng, centerAng, rightAng = group_move_to_device([leftImg, centerImg, rightImg, leftAng, centerAng, rightAng])
 
                 for (img, y_train) in [[leftImg, leftAng], [centerImg, centerAng], [rightImg, rightAng]]:
-
-                    y_pred = model(img)
-                    y_train = y_train.unsqueeze(1) # of shape N x 1
+                    if net == "TruckRNN":
+                        img = img[0].permute([0, 2, 1, 3, 4])
+                        y_pred = model(img)
+                        y_train = y_train.squeeze()[: , -y_pred.shape[1]:]
+                    else:
+                        y_pred = model(img)
+                        y_train = y_train.unsqueeze(1) # of shape N x 1
                     loss = getLoss(y_pred, y_train)
 
                     # Update loss
