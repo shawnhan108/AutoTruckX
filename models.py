@@ -154,8 +154,10 @@ class TruckRNN (nn.Module):
 
         x = self.out(x)                                                                     # 5 x N x 1
 
-        return x.squeeze().permute(1, 0)                                                    # 5 x N x 1 -> N x 5
-
+        if x.shape[1] != 1:
+            return x.squeeze().permute(1, 0)                                                # 5 x N x 1 -> N x 5
+        else:
+            return x.squeeze(1).permute(1, 0)   
 
 class TruckResnet50(nn.Module):
     """

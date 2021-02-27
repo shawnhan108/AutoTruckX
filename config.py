@@ -17,7 +17,7 @@ batch_size = 8 # 32
 seq_len = 15 # for LSTM
 print_freq = 50
 tensorboard_freq = 50
-epochs = 15 # 20
+epochs = 20
 lrate = 1e-4
 wdecay = 1e-4
 getLoss = torch.nn.MSELoss()
@@ -32,9 +32,9 @@ ckpt_src = "./checkpoints/{1}/ckpt_{0}.pth".format(curtime.split(" ")[0] + "_" +
 ckpt_src = "./checkpoints/{0}/best_ckpt.pth".format(net)
 
 # inference
-best_ckpt_src = "./checkpoints/{0}/best_ckpt.pth".format(net)
+best_ckpt_src = "./checkpoints/{0}/best_ckpt_1.pth".format(net)
 inf_img_src = "./data/inference/input/test.jpeg"
-inf_vid_src = "./data/inference/input/test2.mp4"
+inf_vid_src = "./data/inference/input/test.mp4"
 inf_out_src = "./data/inference/output/output.txt"
 inf_out_img_src = "./data/inference/output/output.jpg"
 inf_out_vid_src = "./data/inference/output/output.avi"
