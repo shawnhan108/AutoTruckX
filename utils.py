@@ -1,7 +1,11 @@
 import logging
 
-import torch 
+import torch
+from torchvision import transforms 
+import numpy as np
+
 from config import device
+from models import TruckNN, TruckResnet50, TruckRNN
 
 class LossMeter(object):
     # To keep track of most recent, average, sum, and count of a loss metric.
@@ -36,9 +40,43 @@ def get_logger():
     logger.setLevel(logging.INFO)
     return logger
 
-def freeze_params(model):
-    count = 0
-    for param in model.parameters():
-        count += 1
-        if count <= 141:
-            param.requires_grad = False
+def select_model(model_name, init_msg):
+    logger = get_logger()
+    logger.info(init_msg)
+    if model_name == "TruckNN":
+        model = TruckNN()
+    elif model_name == "TruckResnet50":
+        model = TruckResnet50()
+    elif model_name == "TruckRNN":
+        model = TruckRNN()
+    model = model.to(device)
+    
+    return logger, model
+
+def load_weights(model, ckpt_src, logger):
+    state = torch.load(ckpt_src, map_location=torch.device(device))['model_state_dict']
+    for key in list(state.keys()):
+        state[key.replace('module.', '')] = state.pop(key)
+    model.load_state_dict(state, strict=True)
+    model.eval()
+    logger.info("(2) Model Loaded ... ")
+
+def preprocess_img(img, model_name):
+    # input img : np array, returns a tensor of 1, C, H, W
+    img = torch.from_numpy(img).permute(2, 0, 1) # D, H, W
+
+    if model_name == "TruckNN":
+        size = (80, 240)
+    elif model_name == "TruckResnet50":
+        size = (224, 224)
+    elif model_name == "TruckRNN":
+        size = (80, 240)
+
+    transform = transforms.Compose([
+        transforms.Resize(size),
+        transforms.Lambda(lambda x: (x / 127.5) - 1),
+    ])
+    img = transform(img)
+    img = img[np.newaxis, :]
+
+    return img

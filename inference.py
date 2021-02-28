@@ -7,27 +7,15 @@ import cv2
 
 from models import TruckNN, TruckResnet50, TruckRNN
 from config import device, best_ckpt_src, inf_img_src, inf_vid_src, inf_out_src, inf_out_img_src, inf_out_vid_src, net, seq_len
-from utils import get_logger
+from utils import select_model, load_weights, preprocess_img
 from visualize import vis_angle_on_img
 
 
 def inference_image(model, logger, img=np.array(Image.open(inf_img_src)), record=True, log=True):
     
     orig_img = img.copy()
-    img = torch.from_numpy(img).permute(2, 0, 1) # D, H, W
+    img = preprocess_img(img, net)
 
-    if net == "TruckNN":
-        size = (80, 240)
-    elif net == "TruckResnet50":
-        size = (224, 224)
-
-    transform = transforms.Compose([
-        transforms.Resize(size),
-        transforms.Lambda(lambda x: (x / 127.5) - 1),
-    ])
-
-    img = transform(img)
-    img = img[np.newaxis, :]
     # Inference: 
     y_pred = model(img)
     angle = round(y_pred.squeeze().item(), 3)
@@ -104,15 +92,8 @@ def inference_video_seq(model, logger, record=True, log=True):
         ret, frame = video_source.read()
         frame_show = frame.copy()
 
-        img = torch.from_numpy(frame).permute(2, 0, 1) # D, H, W
-        size = (80, 240)
-        transform = transforms.Compose([
-            transforms.Resize(size),
-            transforms.Lambda(lambda x: (x / 127.5) - 1),
-        ])
-
-        img = transform(img)
-        
+        img = preprocess_img(frame, net)
+        img = img.squeeze(0)
         seq.append(img)
 
         if len(seq) == seq_len:
@@ -143,23 +124,11 @@ def inference_video_seq(model, logger, record=True, log=True):
 
 if __name__ == "__main__":
     # init model
-    logger = get_logger()
-    logger.info("(1) Initiating Inference ... ")
-    if net == "TruckNN":
-        model = TruckNN()
-    elif net == "TruckResnet50":
-        model = TruckResnet50()
-    elif net == "TruckRNN":
-        model = TruckRNN()
-    model = model.to(device)
+    init_msg = "(1) Initiating Inference ... "
+    logger, model = select_model(model_name=net, init_msg=init_msg)
 
     # load model weights
-    state = torch.load(best_ckpt_src, map_location=torch.device(device))['model_state_dict']
-    for key in list(state.keys()):
-        state[key.replace('module.', '')] = state.pop(key)
-    model.load_state_dict(state, strict=True)
-    model.eval()
-    logger.info("(2) Model Loaded ... ")
+    load_weights(model, best_ckpt_src, logger)
 
     # inference
     if net == "TruckRNN":

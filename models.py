@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn 
 from torchvision.models import resnet50
 
-from utils import freeze_params
-
 class TruckNN (nn.Module):
     """
     A modified version of the CNN model, adapted from the NVIDIA architecture.
@@ -173,7 +171,7 @@ class TruckResnet50(nn.Module):
         super(TruckResnet50, self).__init__()
 
         self.resnet50 = resnet50(pretrained=True)
-        freeze_params(self.resnet50)
+        self.freeze_params(self.resnet50)
         self.resnet50.fc = nn.Identity()                            # N x 3 x 224 x 224 -> N x 2048
 
         self.fc = nn.Sequential(
@@ -186,6 +184,13 @@ class TruckResnet50(nn.Module):
         )
 
         self.out = nn.Linear(64, 1)                                 # N x 64 -> N x 1
+
+    def freeze_params(self, model):
+        count = 0
+        for param in model.parameters():
+            count += 1
+            if count <= 141:
+                param.requires_grad = False
 
     def forward(self, x):
         
