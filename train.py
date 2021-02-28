@@ -9,7 +9,7 @@ from torch.optim import Adam, lr_scheduler
 from tensorboardX import SummaryWriter
 
 from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_src, net, \
-                    img_dir, csv_src, train_test_split_ratio, seq_len
+                    img_dir, csv_src, train_test_split_ratio, seq_len, early_stop_tolerance
 from utils import group_move_to_device, LossMeter, get_logger
 from models import TruckNN, TruckResnet50, TruckRNN
 from data import TruckDataset, TruckNNSampler
@@ -164,6 +164,8 @@ def train():
         if not is_best:
             epochs_since_improvement += 1
             logger.info("Epochs since last improvement: %d\n" % (epochs_since_improvement,))
+            if epochs_since_improvement == early_stop_tolerance:
+                break # early stopping.
         else:
             epochs_since_improvement = 0
             state = {
