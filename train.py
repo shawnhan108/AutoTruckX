@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import tqdm
@@ -9,8 +11,9 @@ from torch.optim import Adam, lr_scheduler
 from tensorboardX import SummaryWriter
 
 from config import device, epochs, lrate, wdecay, batch_size, getLoss, print_freq, tensorboard_freq, ckpt_src, net, \
-                    img_dir, csv_src, train_test_split_ratio, seq_len, early_stop_tolerance
-from utils import group_move_to_device, LossMeter, get_logger
+                    img_dir, csv_src, train_test_split_ratio, seq_len, early_stop_tolerance, fine_tune_ratio, \
+                    is_continue, best_ckpt_src
+from utils import group_move_to_device, LossMeter, get_logger, load_ckpt_continue_training
 from models import TruckNN, TruckResnet50, TruckRNN
 from data import TruckDataset, TruckNNSampler
 
@@ -22,7 +25,7 @@ TruckRNN: N x 3 x 15 x 80 x 240 -> N x 5
 TruckResnet50: N x 3 x 224 x 224 -> N x 1
 """
 
-def train():
+def train(cont=False):
     def loadData():
         data = pd.read_csv(csv_src)
         X = data[data.columns[0]].values
@@ -44,14 +47,26 @@ def train():
     elif net == "TruckRNN":
         model = TruckRNN()
 
+    # Schedule learning rate. Fine-tune after 25th epoch for 5 more epochs.
+    optim = Adam(model.parameters(), lr=lrate, weight_decay=wdecay)
+    scheduler = lr_scheduler.MultiStepLR(optim, milestones=[int(epochs * fine_tune_ratio)], gamma=0.1)
+
+    cur_epoch = 0
+    best_mse = float('inf')
+    epochs_since_improvement = 0
+
+    # for continue training
+    if cont:
+        model, optim, cur_epoch, best_mse = load_ckpt_continue_training(best_ckpt_src, model, optim, logger)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            for i in range(cur_epoch):
+                scheduler.step()
+
     model = nn.DataParallel(model)
     model = model.to(device)
     logger.info("(2) Model Initiated ... ")
     logger.info("Training model: {}".format(net))
-
-    # Schedule learning rate. Fine-tune after 25th epoch for 5 more epochs.
-    optim = Adam(model.parameters(), lr=lrate, weight_decay=wdecay)
-    scheduler = lr_scheduler.MultiStepLR(optim, milestones=[int(epochs * 0.8)], gamma=0.1)
 
     # Dataset and DataLoaders
     img_src_lst, angles = loadData()
@@ -69,13 +84,10 @@ def train():
     
     logger.info("(3) Dataset Initiated. Training Started. ")
 
-    best_mse = float('inf')
-    epochs_since_improvement = 0
-
     # loop over epochs
-    epoch_bar = tqdm.tqdm(total=epochs, desc="Epoch", position=0, leave=True)
-    for epoch in range(epochs):
-
+    epoch_bar = tqdm.tqdm(total=epochs, desc="Epoch", position=cur_epoch, leave=True)
+    for e in range(epochs - cur_epoch):
+        epoch = e + cur_epoch
         # Training.
         model.train()
         trainLossMeter = LossMeter()
@@ -181,4 +193,4 @@ def train():
     writer.close()
 
 if __name__ == "__main__":
-    train()
+    train(cont=is_continue)

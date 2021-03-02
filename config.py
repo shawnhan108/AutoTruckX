@@ -13,16 +13,18 @@ net = "TruckResnet50"
 # training
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-batch_size = 32 # 8
+batch_size = 32 # 8 for LSTM
 seq_len = 15 # for LSTM
 print_freq = 50
 tensorboard_freq = 50
-epochs = 34 # 20
-lrate = 1e-4
+epochs = 20
+lrate = 1e-3 # 1e-4
 wdecay = 1e-4
 getLoss = torch.nn.MSELoss()
 train_test_split_ratio = 0.8
 early_stop_tolerance = 4
+fine_tune_ratio = 0.5 # 0.8
+is_continue = True
 
 print_freq = 100
 tensorboard_freq = 200
