@@ -20,5 +20,5 @@ __pycache__/
 *.py[cod]
 
 # data and log
-runs/
-data/
+data/IMG
+data/record.csv
