@@ -36,6 +36,28 @@ The best validation loss observed is 0.066 MSE (or 0.25) from TruckResnet50, whi
 
 Despite of this, it can be observed that the models' predictions are reasonable to a high degree.
 
+ ![What is this](./visualizations/model3_output.jpg) ![What is this](./visualizations/model3_output2.jpg) 
+ ![](./visualizations/demo.gif)
 
+For further visualization, saliency maps of the last Resnet50 Convolutional layer (layer4) can be observed as below:
+![What is this](./visualizations/resnet_salient_map1.png) ![What is this](./visualizations/resnet_salient_map2.png)
 
- ![What is this](./visualizations/model3_output.jpg) ![What is this](./visualizations/model3_output2.jpg) ![](./visualizations/demo.mp4)
+The model seems to possess salient features on the road.
+
+### 6 Model training or testing instructions
+
+Pretrained checkpoints for TruckNN and TruckRNN can be found in `checkpoints` directory. Checkpoint for TruckResnet50 can be downloaded via this [link](https://drive.google.com/file/d/1P9DB27bXgqySR7fRcAHog6xr2d-fRQCh/view?usp=sharing). Place it to `./checkpoints/TruckResnet50/best_ckpt_1.pth`.
+
+* Set up all configurations in `config.py`.
+* To train networks, `python train.py`.
+* To inference networks on test images, `python inference.py`.
+* To visualize salient maps, `visualize.py`.
+* To observe training history in tensorboard, `tensorboard --logdir runs`.
+
+### 7 Acknowledgement and Reference
+
+* NVIDIA 2016 paper [*End to End Learning for Self-Driving Cars*](https://arxiv.org/abs/1604.07316).
+* Du et al.'s 2019 paper [*Self-Driving Car Steering Angle Prediction Based on Image Recognition*](https://arxiv.org/abs/1912.05440), and its [affiliated repo](https://github.com/FangLintao/Self-Driving-Car).
+* Manajit Pal's *towards data science* tutorial [*Deep Learning for Self-Driving Cars*](https://towardsdatascience.com/deep-learning-for-self-driving-cars-7f198ef4cfa2), as well as its [affiliated repo](https://github.com/ManajitPal/DeepLearningForSelfDrivingCars).
+* Aditya Rastogi's *Data Driven Investor* tutorial [*Visualizing Neural Networks using Saliency Maps*](https://medium.datadriveninvestor.com/visualizing-neural-networks-using-saliency-maps-in-pytorch-289d8e244ab4).
+* Zhenye Na's *Self-Driving Car Simulator* [dataset on Kaggle](https://www.kaggle.com/zaynena/selfdriving-car-simulator).
