@@ -58,13 +58,15 @@ def train(cont=False):
     # for continue training
     if cont:
         model, optim, cur_epoch, best_mse = load_ckpt_continue_training(best_ckpt_src, model, optim, logger)
+        logger.info("Current best loss (mse): {0}".format(best_mse))
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             for i in range(cur_epoch):
                 scheduler.step()
+    else:
+        model = nn.DataParallel(model)
+        model = model.to(device)
 
-    model = nn.DataParallel(model)
-    model = model.to(device)
     logger.info("(2) Model Initiated ... ")
     logger.info("Training model: {}".format(net))
 

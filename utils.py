@@ -1,6 +1,7 @@
 import logging
 
 import torch
+import torch.nn as nn
 from torchvision import transforms 
 import numpy as np
 
@@ -82,12 +83,15 @@ def preprocess_img(img, model_name):
     return img
 
 def load_ckpt_continue_training(ck_path, model, optimizer, logger):
+    model = model.to(device)
+
     checkpoint = torch.load(ck_path, map_location=torch.device(device))
     for key in list(checkpoint['model_state_dict'].keys()):
         checkpoint['model_state_dict'][key.replace('module.', '')] = checkpoint['model_state_dict'].pop(key)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-
+    model = nn.DataParallel(model)
+    
     logger.info("Continue training mode, from epoch {0}. Checkpoint loaded.".format(checkpoint['epoch']))
 
     return model, optimizer, checkpoint['epoch'], checkpoint['loss']

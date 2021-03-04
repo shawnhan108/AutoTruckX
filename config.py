@@ -17,13 +17,13 @@ batch_size = 32 # 8 for LSTM
 seq_len = 15 # for LSTM
 print_freq = 50
 tensorboard_freq = 50
-epochs = 20
-lrate = 1e-3 # 1e-4
+epochs = 40 #20
+lrate = 1e-4
 wdecay = 1e-4
 getLoss = torch.nn.MSELoss()
 train_test_split_ratio = 0.8
-early_stop_tolerance = 4
-fine_tune_ratio = 0.5 # 0.8
+early_stop_tolerance = 10 #4
+fine_tune_ratio = 0.8
 is_continue = True
 
 print_freq = 100
@@ -43,5 +43,5 @@ inf_out_img_src = "./data/inference/output/output.jpg"
 inf_out_vid_src = "./data/inference/output/output.avi"
 
 # visualization
-vis_out_src = "./data/inference/vis/out.png"
+vis_out_src = "./data/inference/vis/out_test.png"
 target_layer_name = "layer4"
