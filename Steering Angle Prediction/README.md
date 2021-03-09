@@ -1,7 +1,3 @@
-# AutoTruckX
-
-An experimental project for autonomous vehicle perception, which contains two sections: steering angle prediction and panoptic semantic segmentation. 
-
 # Steering Angle Prediction
 
 ### 1 Model Architecture
