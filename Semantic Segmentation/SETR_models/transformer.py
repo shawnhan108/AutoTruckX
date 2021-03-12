@@ -75,22 +75,32 @@ class FeedForward(nn.Module):
     def forward(self, x):
         return self.net(x)
 
+class InterSeq(nn.Sequential):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    def forward(self, x):
+        intermediate_outputs = {}
+        x_copy = x
+        for name, module in self.named_children():
+            x_copy = intermediate_outputs[name] = module(x_copy)
+
+        return x_copy, intermediate_outputs
 
 class Transformer(nn.Module):
     # full transformer module
     def __init__(self, dim, depth, heads, mlp_dim, ff_drop_rate=0.1, attn_drop_rate=0.1):
         super().__init__()
-        self.layers = nn.ModuleList([])
+        layers = []
         for _ in range(depth):
-            self.layers.append(nn.ModuleList([
+            layers.extend([
                 ResNorm(dim, MultiHeadAttention(dim, heads=heads, dropout_rate=attn_drop_rate),dropout_rate=ff_drop_rate),
                 ResNorm(dim, FeedForward(dim, hidden_dim=mlp_dim, dropout_rate=ff_drop_rate))
-            ]))
+            ])
+        self.layers = InterSeq(*layers)
     
     def forward(self, x):
-        for attn, ff in self.layers:
-            x = ff(attn(x))
-        return x
+        return self.layers(x)
 
 
 """
