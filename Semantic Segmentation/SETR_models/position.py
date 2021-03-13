@@ -14,7 +14,7 @@ class LearnedPosEmbedding(nn.Module):
 
         #  if there are no positional indices provided, get it from the state
         if position_id is None:  
-            position_id = self.Positional_IDs[:, : seq_len]
+            position_id = self.Positional_IDs[:, : self.seq_len]
         
         # get the actual position embedding features, and concat on the input
         return x + self.embedding(position_id)

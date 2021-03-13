@@ -76,10 +76,14 @@ class FeedForward(nn.Module):
         return self.net(x)
 
 class InterSeq(nn.Sequential):
-    def __init__(self, *args):
+    def __init__(self, *args, inter_results=True):
         super().__init__(*args)
+        self.inter_results = inter_results
 
     def forward(self, x):
+        if not self.inter_results:
+            return super().forward(x)
+
         intermediate_outputs = {}
         x_copy = x
         for name, module in self.named_children():
@@ -88,6 +92,9 @@ class InterSeq(nn.Sequential):
         return x_copy, intermediate_outputs
 
 class Transformer(nn.Module):
+    # MSA: (batchsize, seqlen, embedding_size) -> (batchsize, seqlen, embedding_size)
+    # MLP: dim -> dim
+    # Overall, transfomer does not change shape
     # full transformer module
     def __init__(self, dim, depth, heads, mlp_dim, ff_drop_rate=0.1, attn_drop_rate=0.1):
         super().__init__()
