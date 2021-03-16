@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn, einsum
+from torch import nn, einsum
 
 from resnet import ResNetV2
 
@@ -14,9 +14,9 @@ class MultiHeadAttention(nn.Module):
         self.head_dim = int(dim // heads)
         self.inner_dim = self.head_num * self.head_dim
 
-        self.in_proj_q = nn.Linear(dim, inner_dim)
-        self.in_proj_k = nn.Linear(dim, inner_dim)
-        self.in_proj_v = nn.Linear(dim, inner_dim)
+        self.in_proj_q = nn.Linear(dim, self.inner_dim)
+        self.in_proj_k = nn.Linear(dim, self.inner_dim)
+        self.in_proj_v = nn.Linear(dim, self.inner_dim)
         self.dropout = nn.Dropout(dropout_rate)
 
         self.out_proj = nn.Sequential(
@@ -34,8 +34,7 @@ class MultiHeadAttention(nn.Module):
         k = self.reshape(self.in_proj_k(x))
         v = self.reshape(self.in_proj_v(x))
 
-        qk = torch.matmul(q, k.transpose(-1, -2))
-        qk = x / (self.head_dim ** -0.5) # sqrt(d))
+        qk = einsum('b h i d, b h j d -> b h i j', q, k) / (self.head_dim ** -0.5)
         qk = qk.softmax(dim=-1)
         weights = qk if self.use_vis else None
         qk = self.dropout(qk)
@@ -69,10 +68,11 @@ class FeedForward(nn.Module):
 
 class PosEmbedding(nn.Module):
     # Embedding of the hybrid variant
-    def __init__(self, img_dim, dim, res_layer_num, res_width_factor, dropout_rate, in_channels=3):
-        super(Embedding, self).__init__()
-        patch_size = (1, 1)
-        patch_num = img_dim
+    def __init__(self, img_dim, grid_dim, dim, res_layer_num, res_width_factor, dropout_rate, in_channels=3):
+        super(PosEmbedding, self).__init__()
+
+        patch_size = (img_dim // 16 // grid_dim, img_dim // 16 // grid_dim)
+        patch_num = (img_dim // (patch_size[0] * 16)) ** 2
 
         self.hybrid_model = ResNetV2(block_units=res_layer_num, width_factor=res_width_factor)
 
@@ -85,15 +85,15 @@ class PosEmbedding(nn.Module):
     def forward(self, x):
         x, features = self.hybrid_model(x)  # N x dim x H/pd x W/pd
         x = self.patch_embedding(x)         # N x dim x H/pd x W/pd
-        x = x.flatten(2).transpose(-1, -2)  # N x HW x dim
+        x = x.flatten(2).transpose(-1, -2)  # N x HW/pd^2 x dim
 
         x = x + self.pos_embedding
         x = self.dropout(x)
-        return x, features
+        return x, features                  # N x HW/pd^2 x dim
 
 class TransformerBlock(nn.Module):
 
-    def __init__(self, dim, heads, use_vis=True,
+    def __init__(self, dim, heads, mlp_dim, use_vis=True,
                 ff_drop_rate=0.1, attn_drop_rate=0.1):
         super(TransformerBlock, self).__init__()
         self.dim = dim
@@ -113,15 +113,15 @@ class TransformerBlock(nn.Module):
         return x, weights
 
 class Encoder_No_Embed(nn.Module):
-    def __init__(self, dim, heads, depth, use_vis=True,
+    def __init__(self, dim, heads, mlp_dim, depth, use_vis=True,
                 ff_drop_rate=0.1, attn_drop_rate=0.1):
         super(Encoder_No_Embed, self).__init__()
         self.use_vis = use_vis
         self.layers = nn.ModuleList()
-        self.norm = nn.Linear(dim, eps=1e-6)
+        self.norm = nn.LayerNorm(dim, eps=1e-6)
 
         for _ in range(depth):
-            self.layers.append(TransformerBlock(dim, heads, use_vis=use_vis,
+            self.layers.append(TransformerBlock(dim, heads, mlp_dim=mlp_dim, use_vis=use_vis,
                                                 ff_drop_rate=ff_drop_rate, attn_drop_rate=attn_drop_rate))
 
     def forward(self, x):
@@ -134,15 +134,15 @@ class Encoder_No_Embed(nn.Module):
         return self.norm(x), attn_weights
 
 class Encoder(nn.Module):
-    def __init__(self, dim, heads, depth, img_dim, res_layer_num, res_width_factor, use_vis=True,
+    def __init__(self, dim, heads, mlp_dim, depth, img_dim, grid_dim, res_layer_num, res_width_factor, use_vis=True,
                 ff_drop_rate=0.1, attn_drop_rate=0.1):
         super(Encoder, self).__init__()
-        self.embedding = PosEmbedding(img_dim=img_dim, dim=dim, res_layer_num=res_layer_num, 
+        self.embedding = PosEmbedding(img_dim=img_dim, grid_dim=grid_dim, dim=dim, res_layer_num=res_layer_num, 
                                     res_width_factor=res_width_factor, dropout_rate=ff_drop_rate)
-        self.encoder = Encoder_No_Embed(dim=dim, heads=heads, depth=depth, use_vis=use_vis,
+        self.encoder = Encoder_No_Embed(dim=dim, heads=heads, mlp_dim=mlp_dim, depth=depth, use_vis=use_vis,
                                         ff_drop_rate=ff_drop_rate, attn_drop_rate=attn_drop_rate)
     
     def forward(self, x):
-        x, features = self.embedding(x)
-        x, attn_weights = self.encoder(x)
+        x, features = self.embedding(x)                 # N x HW/pd^2 x dim
+        x, attn_weights = self.encoder(x)               # N x HW/pd^2 x dim
         return x, attn_weights, features
