@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn 
 
-from transformer import Transformer, InterSeq
-from position import LearnedPosEmbedding, FixedPosEmbedding
+from SETR_models.transformer import Transformer, InterSeq
+from SETR_models.position import LearnedPosEmbedding, FixedPosEmbedding
 
 class SETR(nn.Module):
     def __init__(self, 

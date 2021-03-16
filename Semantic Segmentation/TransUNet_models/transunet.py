@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn 
 
-from encoder import Encoder
-from decoder import Decoder 
+from TransUNet_models.encoder import Encoder
+from TransUNet_models.decoder import Decoder 
 
 class SegmentationHead(nn.Sequential):
     def __init__(self, in_channels, out_channels, kernel_size=3, upsampling_scale=1):
@@ -35,7 +35,7 @@ class TransUNet(nn.Module):
 # for cityscape dataset
 CLASS_NUM = 19
 
-def get_TransUNet_small(img_dim=256, class_num=CLASS_NUM):
+def get_TransUNet_base(img_dim=256, class_num=CLASS_NUM):
     # 105M parameters including res50v2
     model = TransUNet(
         dim=768, 

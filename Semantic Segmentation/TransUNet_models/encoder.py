@@ -1,7 +1,7 @@
 import torch
 from torch import nn, einsum
 
-from resnet import ResNetV2
+from TransUNet_models.resnet import ResNetV2
 
 from einops import rearrange
 
