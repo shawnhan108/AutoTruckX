@@ -255,7 +255,7 @@ class SETR_MLA(SETR):
 
 def get_SETR_PUP(dataset='cityscapes', size='s', conv_patch_extract=False, pos_encode="learned"):
     if dataset == 'cityscapes':
-        img_dim = 768
+        img_dim = 256 #768
         class_num = 19
 
     size = size.upper()
@@ -297,13 +297,13 @@ def get_SETR_PUP(dataset='cityscapes', size='s', conv_patch_extract=False, pos_e
 
 def get_SETR_MLA(dataset='cityscapes', size='s', conv_patch_extract=False, pos_encode="learned"):
     if dataset == 'cityscapes':
-        img_dim = 768
+        img_dim = 256 #768
         class_num = 19
     
     size = size.upper()
     assert size in ['S', 'L']    
     if size == 'S':
-        aux_layers = None
+        aux_layers = [3, 6, 9, 12]
         model = SETR_MLA(
             img_dim=img_dim, 
             patch_dim=16, 

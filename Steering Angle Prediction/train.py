@@ -190,7 +190,7 @@ def train(cont=False):
             }
             torch.save(state, ckpt_src)
             logger.info("Checkpoint updated.")
-
+            best_mse = best_loss
         epoch_bar.update(1)
     writer.close()
 

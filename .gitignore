@@ -22,3 +22,4 @@ __pycache__/
 # data and log
 Steering Angle Prediction/data/IMG
 Steering Angle Prediction/data/record.csv
+Semantic Segmentation/data/cityscapes
