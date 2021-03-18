@@ -12,11 +12,13 @@ import tqdm
 
 from SETR_models.setr import get_SETR_PUP, get_SETR_MLA
 from TransUNet_models.transunet import get_TransUNet_base, get_TransUNet_large
+from unet_model import UNet
+
 from data import CityscapeDataset
 from utils import get_logger, load_ckpt_continue_training, LossMeter, get_clustering_model, DiceLoss
 from config import device, net, lrate, momentum, wdecay, fine_tune_ratio, best_ckpt_src, \
                     is_continue, iteration_num, IMG_DIM, data_dir, batch_size, print_freq, \
-                    tensorboard_freq
+                    tensorboard_freq, CLASS_NUM, ckpt_src, early_stop_tolerance, epoch_num
 
 def train(cont=False):
 
@@ -36,6 +38,8 @@ def train(cont=False):
         model = get_TransUNet_base()
     elif net == "TransUNet-Large":
         model = get_TransUNet_large()
+    elif net == "UNet":
+        model = UNet(CLASS_NUM)
     
     # prepare dataset 
     cluster_model = get_clustering_model(os.path.join(data_dir, "train"), logger)
@@ -47,7 +51,7 @@ def train(cont=False):
     logger.info("(2) Dataset Initiated. ")
 
     # optimizer
-    epochs = iteration_num // len(train_loader) + 1
+    epochs = epoch_num if epoch_num > 0 else iteration_num // len(train_loader) + 1
     optim = SGD(model.parameters(), lr=lrate, momentum=momentum, weight_decay=wdecay)
     scheduler = lr_scheduler.MultiStepLR(optim, milestones=[int(epochs * fine_tune_ratio)], gamma=0.1)
 
@@ -70,9 +74,15 @@ def train(cont=False):
     logger.info("(3) Model Initiated ... ")
     logger.info("Training model: {}".format(net) + ". Training Started.")
 
+    # loss 
+    ce_loss = CrossEntropyLoss()
+    dice_loss = DiceLoss(CLASS_NUM)
+
     # loop over epochs
     iter_count = 0
     epoch_bar = tqdm.tqdm(total=epochs, desc="Epoch", position=cur_epoch, leave=True)
+    logger.info("Total epochs: {0}. Starting from epoch {1}.".format(epochs, cur_epoch+1))
+
     for e in range(epochs - cur_epoch):
         epoch = e + cur_epoch
 
@@ -91,10 +101,12 @@ def train(cont=False):
                     pred, _ = model(orig_img)
                 else:
                     pred = model(orig_img)
-            
-            ce_loss = CrossEntropyLoss(pred, mask_img[:].long())
-            dice_loss = DiceLoss(pred, mask_img, softmax=True)
-            loss = 0.5 * (ce_loss + dice_loss)
+            elif net == "UNet":
+                pred = model(orig_img)
+
+            loss_ce = ce_loss(pred, mask_img[:].long())
+            loss_dice = dice_loss(pred, mask_img, softmax=True)
+            loss = 0.5 * (loss_ce + loss_dice)
 
             # Backward Propagation, Update weight and metrics
             optim.zero_grad()
@@ -140,10 +152,12 @@ def train(cont=False):
                         pred, _ = model(orig_img)
                     else:
                         pred = model(orig_img)
-                
-                ce_loss = CrossEntropyLoss(pred, mask_img[:].long())
-                dice_loss = DiceLoss(pred, mask_img, softmax=True)
-                loss = 0.5 * (ce_loss + dice_loss)
+                elif net == "UNet":
+                    pred = model(orig_img)
+
+                loss_ce = ce_loss(pred, mask_img[:].long())
+                loss_dice = dice_loss(pred, mask_img, softmax=True)
+                loss = 0.5 * (loss_ce + loss_dice)
 
                 # Update loss
                 validLossMeter.update(loss.item())
