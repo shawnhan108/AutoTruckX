@@ -18,7 +18,7 @@ from data import CityscapeDataset
 from utils import get_logger, load_ckpt_continue_training, LossMeter, get_clustering_model, DiceLoss
 from config import device, net, lrate, momentum, wdecay, fine_tune_ratio, best_ckpt_src, \
                     is_continue, iteration_num, IMG_DIM, data_dir, batch_size, print_freq, \
-                    tensorboard_freq, CLASS_NUM, ckpt_src, early_stop_tolerance, epoch_num
+                    tensorboard_freq, CLASS_NUM, ckpt_src, early_stop_tolerance, epoch_num, use_dice_loss
 
 def train(cont=False):
 
@@ -76,7 +76,8 @@ def train(cont=False):
 
     # loss 
     ce_loss = CrossEntropyLoss()
-    dice_loss = DiceLoss(CLASS_NUM)
+    if use_dice_loss:
+        dice_loss = DiceLoss(CLASS_NUM)
 
     # loop over epochs
     iter_count = 0
@@ -105,8 +106,11 @@ def train(cont=False):
                 pred = model(orig_img)
 
             loss_ce = ce_loss(pred, mask_img[:].long())
-            loss_dice = dice_loss(pred, mask_img, softmax=True)
-            loss = 0.5 * (loss_ce + loss_dice)
+            if use_dice_loss:
+                loss_dice = dice_loss(pred, mask_img, softmax=True)
+                loss = 0.5 * (loss_ce + loss_dice)
+            else:
+                loss = loss_ce
 
             # Backward Propagation, Update weight and metrics
             optim.zero_grad()
@@ -156,8 +160,11 @@ def train(cont=False):
                     pred = model(orig_img)
 
                 loss_ce = ce_loss(pred, mask_img[:].long())
-                loss_dice = dice_loss(pred, mask_img, softmax=True)
-                loss = 0.5 * (loss_ce + loss_dice)
+                if use_dice_loss:
+                    loss_dice = dice_loss(pred, mask_img, softmax=True)
+                    loss = 0.5 * (loss_ce + loss_dice)
+                else:
+                    loss = loss_ce
 
                 # Update loss
                 validLossMeter.update(loss.item())

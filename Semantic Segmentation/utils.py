@@ -2,13 +2,18 @@ import logging
 import os
 
 from config import device, IMG_DIM, CLASS_NUM
+from SETR_models.setr import get_SETR_PUP, get_SETR_MLA
+from TransUNet_models.transunet import get_TransUNet_base, get_TransUNet_large
+from unet_model import UNet
 
 from PIL import Image
+import cv2
 import numpy as np
 from sklearn.cluster import KMeans
 
 import torch
 import torch.nn as nn
+from torchvision import transforms
 
 def get_logger():
     # Initiate a logger
@@ -112,3 +117,42 @@ class DiceLoss(nn.Module):
             loss += dice * weight[i]
         return loss / self.n_classes
 
+def select_model(model_name, init_msg):
+    logger = get_logger()
+    logger.info(init_msg)
+    if model_name == "SETR-PUP":
+        _, model = get_SETR_PUP()
+    elif model_name == "SETR-MLA":
+        _, model = get_SETR_MLA()
+    elif model_name == "TransUNet-Base":
+        model = get_TransUNet_base()
+    elif model_name == "TransUNet-Large":
+        model = get_TransUNet_large()
+    elif model_name == "UNet":
+        model = UNet(CLASS_NUM)
+    model = model.to(device)
+    
+    return logger, model
+
+def load_weights(model, ckpt_src, logger):
+    state = torch.load(ckpt_src, map_location=torch.device(device))['model_state_dict']
+    for key in list(state.keys()):
+        state[key.replace('module.', '')] = state.pop(key)
+    model.load_state_dict(state, strict=True)
+    model.eval()
+    logger.info("(2) Model Loaded ... ")
+
+def preprocess_img(img):
+    # input img : np array, returns a tensor of 1, C, H, W
+
+    img = cv2.resize(img, (IMG_DIM, IMG_DIM), interpolation=cv2.INTER_AREA)
+
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+    ])
+    img = transform(img)
+
+    img = img[np.newaxis, :]
+
+    return img/255

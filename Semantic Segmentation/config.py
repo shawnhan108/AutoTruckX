@@ -14,10 +14,11 @@ IMG_DIM = 256
 CLASS_NUM = 13
 
 # training 
+use_dice_loss = False # True
 lrate = 0.01
 momentum = 0.9
-print_freq = 100
-tensorboard_freq = 200
+print_freq = 50
+tensorboard_freq = 20
 wdecay = 1e-4
 fine_tune_ratio = 0.8
 early_stop_tolerance = 10 #4
@@ -30,3 +31,7 @@ epoch_num = 40
 
 # inference
 best_ckpt_src = "./checkpoints/{0}/best_ckpt_1.pth".format(net)
+inf_img_src = "./data/inference/input/test2.jpeg"
+inf_vid_src = "./data/inference/input/test.mp4"
+inf_out_img_src = "./data/inference/output/output2.jpg"
+inf_out_vid_src = "./data/inference/output/output.avi"
