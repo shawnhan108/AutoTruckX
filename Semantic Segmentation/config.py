@@ -15,7 +15,7 @@ CLASS_NUM = 13
 
 # training 
 use_dice_loss = False # True
-lrate = 0.01
+lrate = 0.001
 momentum = 0.9
 print_freq = 50
 tensorboard_freq = 20
@@ -30,8 +30,8 @@ epoch_num = 40
 # epochs num is determined based on number of iterations and dataloader length.
 
 # inference
-best_ckpt_src = "./checkpoints/{0}/best_ckpt_1.pth".format(net)
-inf_img_src = "./data/inference/input/test2.jpeg"
+best_ckpt_src = "./checkpoints/{0}/U-Net2.pth".format(net)
+inf_img_src = "./data/inference/input/test1.jpeg"
 inf_vid_src = "./data/inference/input/test.mp4"
-inf_out_img_src = "./data/inference/output/output2.jpg"
+inf_out_img_src = "./data/inference/output/output1_2.jpg"
 inf_out_vid_src = "./data/inference/output/output.avi"
