@@ -59,20 +59,13 @@ class LossMeter(object):
 def split_img(np_img, img_dim):
     return np_img[:, :img_dim, :], np_img[:, img_dim:, :]
 
-def get_clustering_model(img_dir_src, logger):
+def get_clustering_model(logger):
     logger.info("Clustering segmentation classes ...")
 
-    colors = []
-    img_srcs = os.listdir(img_dir_src)[:15]
+    color_array = np.random.choice(range(256), 3000).reshape(-1, 3)
 
-    for img_src in img_srcs:
-        img, mask = split_img(np.array(Image.open(os.path.join(img_dir_src, img_src)).convert('RGB')), IMG_DIM)
-        colors.append(mask.reshape(-1, 3))
-    colors = np.array(colors)
-    colors = colors.reshape((-1, 3))
-
-    cluster_model = KMeans(CLASS_NUM)
-    cluster_model.fit(colors)
+    cluster_model = KMeans(n_clusters=CLASS_NUM)
+    cluster_model.fit(color_array)
 
     logger.info("Segmentation classes clustering has finished.")
     return cluster_model
@@ -155,4 +148,4 @@ def preprocess_img(img):
 
     img = img[np.newaxis, :]
 
-    return img/255
+    return img

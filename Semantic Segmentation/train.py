@@ -3,7 +3,7 @@ import os
 
 import torch 
 import torch.nn as nn 
-from torch.optim import SGD, lr_scheduler
+from torch.optim import SGD, Adam, lr_scheduler
 from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 
@@ -42,7 +42,7 @@ def train(cont=False):
         model = UNet(CLASS_NUM)
     
     # prepare dataset 
-    cluster_model = get_clustering_model(os.path.join(data_dir, "train"), logger)
+    cluster_model = get_clustering_model(logger)
     train_dataset = CityscapeDataset(img_dir=data_dir, img_dim=IMG_DIM, mode="train", cluster_model=cluster_model)
     valid_dataset = CityscapeDataset(img_dir=data_dir, img_dim=IMG_DIM, mode="val", cluster_model=cluster_model)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -53,6 +53,7 @@ def train(cont=False):
     # optimizer
     epochs = epoch_num if epoch_num > 0 else iteration_num // len(train_loader) + 1
     optim = SGD(model.parameters(), lr=lrate, momentum=momentum, weight_decay=wdecay)
+    # optim = Adam(model.parameters(), lr=lrate)
     scheduler = lr_scheduler.MultiStepLR(optim, milestones=[int(epochs * fine_tune_ratio)], gamma=0.1)
 
     cur_epoch = 0
