@@ -34,7 +34,7 @@ All three models were first trained with 20 epochs, 1e-4 learning rate. For Truc
 
 ### 5 Results and Visualization
 
-The best validation loss observed is 0.066 MSE (or 0.25) from TruckResnet50, which is worse than the loss claimed in the paper by an entire degree. Possible contributing factors include lack of training resources, limited dataset, difference in dataset content (simulator vs real world) and environmental variances, etc.
+The best validation loss observed is 0.066 MSE (or 0.25) from TruckResnet50, which is worse than the loss claimed in the paper by an entire degree. Possible contributing factors include model architecture (design and/or complexity), lack of training resources, limited dataset, difference in dataset content (simulator vs real world) and environmental variances, etc.
 
 Despite of this, it can be observed that the models' predictions are reasonable to a high degree.
 
