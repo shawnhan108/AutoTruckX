@@ -8,6 +8,12 @@ with Transformers*](https://arxiv.org/abs/2012.15840). In particular, the SETR-P
 * TransUNet: A UNet-transformer hybrid model that uses UNet to extract high-resolution feature maps, a transformer to tokenize and encode images, and a UNet-like mechanism to upsample in decoder using previously-extracted feature maps. This model was adapted from and implemented based on the paper published in February 2021 by Jieneng Chen et al., titled [*TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation*](https://arxiv.org/abs/2102.04306).
 * UNet: the well-known UNet model. This variant of UNet, which is 4-layers deep in the architecture, is adapted and implemented based on the paper published in November 2018 by Ari Silburt et al., titled [*Lunar Crater Identification via Deep Learning*](https://arxiv.org/abs/1803.02192).
 
+| SETR | TransUNet | UNet |
+| ------------- | ------------- | ------------- |
+| ![What is this](./visualizations/SETR_model.png)  | ![What is this](./visualizations/TransUNet_model.png)  | ![What is this](./visualizations/unet_model.png)|
+
+Figures are authored in and extracted from the original papers respectively.
+
 ### 2 Classification Loss
 
 Two loss functions were experimented:
