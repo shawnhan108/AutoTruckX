@@ -31,7 +31,7 @@ epoch_num = 40
 
 # inference
 best_ckpt_src = "./checkpoints/{0}/U-Net2.pth".format(net)
-inf_img_src = "./data/inference/input/test1.jpeg"
+inf_img_src = "./data/inference/input/test3.jpeg"
 inf_vid_src = "./data/inference/input/test.mp4"
-inf_out_img_src = "./data/inference/output/output1_2.jpg"
+inf_out_img_src = "./data/inference/output/output3_3.jpg"
 inf_out_vid_src = "./data/inference/output/output.avi"

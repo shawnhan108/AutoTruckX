@@ -108,5 +108,5 @@ if __name__ == "__main__":
     model = model.to(device)
 
     # inference 
-    inference_image(model, logger, compare=True)
-    # inference_video(model, logger)
+    # inference_image(model, logger, compare=True)
+    inference_video(model, logger)

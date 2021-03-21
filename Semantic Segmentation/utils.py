@@ -149,3 +149,33 @@ def preprocess_img(img):
     img = img[np.newaxis, :]
 
     return img
+
+def merge_video(source_vid_src, model_output_src, combined_output_src):
+    source_vid_source = cv2.VideoCapture(source_vid_src)
+    frame_width = int(source_vid_source.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(source_vid_source.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_num = int(source_vid_source.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(source_vid_source.get(cv2.CAP_PROP_FPS))
+
+    model_output_source = cv2.VideoCapture(model_output_src)
+    frame_width1 = int(model_output_source.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height1 = int(model_output_source.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_num1 = int(model_output_source.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps1 = int(model_output_source.get(cv2.CAP_PROP_FPS))
+
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    video_out = cv2.VideoWriter(combined_output_src, fourcc, fps, (IMG_DIM*3, IMG_DIM))
+
+
+    for i in range(frame_num):
+        ret, source_frame = source_vid_source.read()
+        ret2, model_frame = model_output_source.read()
+
+        merged_frame = cv2.addWeighted(source_frame, 0.4, model_frame, 0.6, 0)
+        frame_show = np.concatenate((source_frame, model_frame, merged_frame), axis=1)
+        video_out.write(frame_show)
+
+    source_vid_source.release()
+
+    model_output_source.release()
+    video_out.release()
