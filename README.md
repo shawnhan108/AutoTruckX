@@ -3,7 +3,7 @@ An experimental project for autonomous vehicle driving perception with steering 
 
 # Semantic Segmentation
 
-**Detailed description can be found at [`./Semantic Segmentation/README.md`](./Semantic%20Segmentation/README.md).**
+**Detailed description can be found at [`./Semantic Segmentation/README.md`](./Semantic%20Segmentation).**
 
 * SETR: A pure transformer encoder model and a variety of decoder unsampling models to perform semantic segmentation tasks. This model was adapted from and implemented based on the paper published in December 2020 by Sixiao Zheng et al., titled [*Rethinking Semantic Segmentation from a Sequence-to-Sequence Perspective
 with Transformers*](https://arxiv.org/abs/2012.15840). In particular, the SETR-PUP and SETR-MLA variants, that is, the models with progressive upsampling and multi-level feature aggregation decoders, are selected and implemented based on their state-of-the-art performance on benchmark datasets.
@@ -25,7 +25,7 @@ It can be observed that the model can perform reasonable semantic segmentation t
 
 # Steering Angle Prediction
 
-**Detailed description can be found at [`./Steering Angle Prediction/README.md`](./Steering%20Angle%20Prediction/README.md).**
+**Detailed description can be found at [`./Steering Angle Prediction/README.md`](./Steering%20Angle%20Prediction).**
 
 * TruckNN: A CNN model adapted and modified from NVIDIA's 2016 paper [*End to End Learning for Self-Driving Cars*](https://arxiv.org/abs/1604.07316). The original model was augmented with batch normalization layers and dropout layers.
 * TruckResnet50: A CNN transfer learning model utilizing feature maps extracted by ResNet50, connected to additional fully-connected layers. This model was adapated and modified from Du et al.'s 2019 paper [*Self-Driving Car Steering Angle Prediction Based on Image Recognition*](https://arxiv.org/abs/1912.05440). The first 141 layers of the ResNet50 layers (instead of the first 45 layers as in the original paper) were frozen from updating. Dimensions of the fully-connected layers were also modified.
