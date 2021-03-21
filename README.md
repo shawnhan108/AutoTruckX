@@ -15,10 +15,32 @@ with Transformers*](https://arxiv.org/abs/2012.15840). In particular, the SETR-P
 | ![What is this](./Semantic%20Segmentation/visualizations/SETR_model.png)  | ![What is this](./Semantic%20Segmentation/visualizations/TransUNet_model.png)  | ![What is this](./Semantic%20Segmentation/visualizations/unet_model.png)|
 
 Figures are authored in and extracted from the original papers respectively.
-
+ ![](./Semantic%20Segmentation/visualizations/combined.gif)
  ![What is this](./Semantic%20Segmentation/visualizations/output1_2.jpg) 
  ![What is this](./Semantic%20Segmentation/visualizations/output2_2.jpg) 
  ![What is this](./Semantic%20Segmentation/visualizations/output3_2.jpg) 
- ![](./Semantic%20Segmentation/visualizations/combined.gif)
+
 
 It can be observed that the model can perform reasonable semantic segmentation task when inferenced on test image and videos. 
+
+# Steering Angle Prediction
+
+Detailed description can be found at [`./Steering Angle Prediction/README.md`](./Steering%20Angle%20Prediction/README.md).
+
+* TruckNN: A CNN model adapted and modified from NVIDIA's 2016 paper [*End to End Learning for Self-Driving Cars*](https://arxiv.org/abs/1604.07316). The original model was augmented with batch normalization layers and dropout layers.
+* TruckResnet50: A CNN transfer learning model utilizing feature maps extracted by ResNet50, connected to additional fully-connected layers. This model was adapated and modified from Du et al.'s 2019 paper [*Self-Driving Car Steering Angle Prediction Based on Image Recognition*](https://arxiv.org/abs/1912.05440). The first 141 layers of the ResNet50 layers (instead of the first 45 layers as in the original paper) were frozen from updating. Dimensions of the fully-connected layers were also modified.
+* TruckRNN: A Conv3D-LSTM model, also based on and modified from Du et al.'s 2019 paper mentioned above, was also experimented. The model consumes a sequence of 15 consecutive frames as input, and predicts the steering angle at the last frame. Comparing to the original model, maxpooling layers were omitted and batch normalization layers were introduced. 5 convolutional layers were implemented with the last convolutional layer connected with residual output, followed by two LSTM layers, which is rather different to the model architecture proposed in the paper.
+
+| TruckNN | TruckResnet50 | TruckRNN |
+| ------------- | ------------- | ------------- |
+| ![What is this](./Steering%20Angle%20Prediction/visualizations/nvidia_model.png)  | ![What is this](./Steering%20Angle%20Prediction/visualizations/3dLSTM_model.png)  | ![What is this](./Steering%20Angle%20Prediction/visualizations/Res_model.png)|
+
+Figures are authored in and extracted from the original papers respectively.
+
+ ![What is this](./Steering%20Angle%20Prediction/visualizations/model3_output.jpg) ![What is this](./Steering%20Angle%20Prediction/visualizations/model3_output2.jpg) 
+ ![](./Steering%20Angle%20Prediction/visualizations/demo.gif)
+
+For further visualization, saliency maps of the last Resnet50 Convolutional layer (layer4) can be observed as below:
+![What is this](./Steering%20Angle%20Prediction/visualizations/resnet_salient_map1.png) ![What is this](./Steering%20Angle%20Prediction/visualizations/resnet_salient_map2.png)
+
+The model seems to possess salient features on the road.
