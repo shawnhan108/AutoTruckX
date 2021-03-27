@@ -14,7 +14,7 @@ with Transformers*](https://arxiv.org/abs/2012.15840). In particular, the SETR-P
 | ------------- | ------------- | ------------- |
 | ![What is this](./Semantic%20Segmentation/visualizations/SETR_model.png)  | ![What is this](./Semantic%20Segmentation/visualizations/TransUNet_model.png)  | ![What is this](./Semantic%20Segmentation/visualizations/unet_model.png)|
 
-Figures are authored in and extracted from the original papers respectively.
+Figures above are authored in and extracted from the original papers respectively.
  ![](./Semantic%20Segmentation/visualizations/combined.gif)
  ![What is this](./Semantic%20Segmentation/visualizations/output1_2.jpg) 
  ![What is this](./Semantic%20Segmentation/visualizations/output2_2.jpg) 
