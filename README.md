@@ -35,7 +35,7 @@ It can be observed that the model can perform reasonable semantic segmentation t
 | ------------- | ------------- | ------------- |
 | ![What is this](./Steering%20Angle%20Prediction/visualizations/nvidia_model.png)  | ![What is this](./Steering%20Angle%20Prediction/visualizations/3dLSTM_model.png)  | ![What is this](./Steering%20Angle%20Prediction/visualizations/Res_model.png)|
 
-Figures are authored in and extracted from the original papers respectively.
+Figures above are authored in and extracted from the original papers respectively.
 
  ![What is this](./Steering%20Angle%20Prediction/visualizations/model3_output.jpg) ![What is this](./Steering%20Angle%20Prediction/visualizations/model3_output2.jpg) 
  ![](./Steering%20Angle%20Prediction/visualizations/demo.gif)
